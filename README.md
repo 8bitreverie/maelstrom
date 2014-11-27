@@ -1,7 +1,8 @@
 maelstrom
 =========
 
-Silly OO JavaScript GameEngine And Example Game
+Silly OO JavaScript GameEngine And Example Game, here is a demo:   
+http://8bitreverie.github.io/maelstrom/
 
 TODO
 =========
