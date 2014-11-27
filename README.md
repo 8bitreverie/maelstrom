@@ -1,7 +1,7 @@
 maelstrom
 =========
 
-Silly OO JavaScript GameEngine And Example Game, here is a demo:   
+Silly OO JavaScript GameEngine And Example Game, here is a demo (Arrow keys to move):   
 http://8bitreverie.github.io/maelstrom/
 
 TODO
