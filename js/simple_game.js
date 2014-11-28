@@ -34,31 +34,33 @@
     enemiesArray[i] = new GameObject();
 
     enemiesArray[i].name = "enemy"+i;
+
     enemiesArray[i].behaviour = function(){
 
-        if ( this.y > View.height) {
-          this.y = randomIntFromRange(0, 20);
-          this.x = randomIntFromRange(0, View.width);
-          this.vy = 0;
-          this.width  = randomIntFromRange(2, 10);
-          this.height = randomIntFromRange(2, 10);
+        var deltaTime = Time.deltaTime();
+
+        if ( this.position.y > View.height) {
+          this.position.y = randomIntFromRange(0, View.height);
+          this.position.x = randomIntFromRange(0, View.width);
+          this.velocity.y = randomIntFromRange(0.1, 5);
+          this.width      = randomIntFromRange(2, 10);
+          this.height     = randomIntFromRange(2, 10);
         }
 
-        var gravity = randomIntFromRange(0, .03);
+        var gravity = randomIntFromRange(0.1, 5);
 
-        this.x += this.vx;
-        this.y += this.vy;
-        this.vy += gravity;
+        this.position.y += this.velocity.y * deltaTime;
+        this.velocity.y += gravity;
 
     }
 
-    enemiesArray[i].width  = randomIntFromRange(1, 10);
-    enemiesArray[i].height = randomIntFromRange(1, 10);
-    enemiesArray[i].x = randomIntFromRange(0, screenWidth);
-    enemiesArray[i].y = 0;
-    enemiesArray[i].vx = .01;
-    enemiesArray[i].vy = -.01;
-    enemiesArray[i].sprite = new Image();
+    enemiesArray[i].width      = randomIntFromRange(1, 10);
+    enemiesArray[i].height     = randomIntFromRange(1, 10);
+    enemiesArray[i].position.x = randomIntFromRange(0, screenWidth);
+    enemiesArray[i].position.y = 0;
+    enemiesArray[i].velocity.x = 0;
+    enemiesArray[i].velocity.y = randomIntFromRange(0.1, 5);
+    enemiesArray[i].sprite     = new Image();
     enemiesArray[i].sprite.src = 'sprites/enemy.bmp';
   }
 
@@ -66,20 +68,31 @@
   var player = new GameObject();
   player.behaviour = function(){
 
+      var deltaTime = Time.deltaTime();
+      var playerVelocity = 200 * deltaTime;
+
       if (Key.isDown(Key.UP)) {
-        if(this.y > 0 ) this.y--;
+        if(this.position.y > 0.0 ) {
+          this.position.y -= 1 * playerVelocity;
+        }
       }
 
       if (Key.isDown(Key.LEFT)) {
-        if(this.x > 0) this.x--;
+        if(this.position.x > 0.0) {
+          this.position.x -= 1 * playerVelocity;
+        }
       }
 
       if (Key.isDown(Key.DOWN)) {
-        if(this.y < (View.height - this.height)) this.y++;
+        if(this.position.y < (View.height - this.height)){
+          this.position.y += 1 * playerVelocity;
+        }
       }
 
       if (Key.isDown(Key.RIGHT)) {
-        if(this.x < (View.width - this.width)) this.x++;
+        if(this.position.x < (View.width - this.width)) {
+          this.position.x += 1 * playerVelocity;
+        }
       }
   };
   player.width = 20;
@@ -93,6 +106,5 @@
   /* Construct and run the game engine */
   var myEngine = new Maelstrom(levelArray, screenWidth, screenHeight);
   myEngine.run();
-
 
 })();
