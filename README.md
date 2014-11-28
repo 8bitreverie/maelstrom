@@ -1,16 +1,17 @@
 maelstrom
 =========
 
-Silly OO JavaScript GameEngine And Example Game, here is a demo (Arrow keys to move):   
+Silly OO JavaScript GameEngine And Example Game, here is a demo (Arrow keys to move):
 http://8bitreverie.github.io/maelstrom/
 
 TODO
 =========
+
 Add audio that can be triggered from game object behaviour
-Add positional audio
 Add level audio
 Add load arbitrary level
 Add collision detection to the game objects
+Add movement vectors to the game objects with a better name
 Clean up class interfaces
 Remove .init from engine, figure out nicer way to do that because it is cluttered
 Refactor the demo game, write a few more demos to demonstrate simple games/effects
@@ -32,3 +33,4 @@ http://www.html5rocks.com/en/tutorials/webaudio/games/
 
 Test Sound
 http://www.flashkit.com/imagesvr_ce/flashkit/loops/Techno-Dance/Rave/Trancy-AlaShook-10434/Trancy-AlaShook-10434_hifi.mp3
+
