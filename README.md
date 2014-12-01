@@ -16,6 +16,7 @@ Clean up class interfaces
 Remove .init from engine, figure out nicer way to do that because it is cluttered
 Refactor the demo game, write a few more demos to demonstrate simple games/effects
 Add rotation and torque
+Move Radians to angles/ angles to radians out into helper functions
 
 Resources Used
 =========
@@ -34,3 +35,4 @@ http://www.html5rocks.com/en/tutorials/webaudio/games/
 Test Sound
 http://www.flashkit.com/imagesvr_ce/flashkit/loops/Techno-Dance/Rave/Trancy-AlaShook-10434/Trancy-AlaShook-10434_hifi.mp3
 
+http://www.somethinghitme.com/2013/11/13/snippets-i-always-forget-movement/

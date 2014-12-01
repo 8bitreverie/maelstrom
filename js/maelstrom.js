@@ -6,7 +6,7 @@ function GameObject () {
   this.velocity = {x:0, y:0};
   this.width = 0.0;
   this.height = 0.0;
-  this.angle = 0;
+  this.rotation = 0; //TODO: rename this to rotation torque
   this.quadrant = 0;
   this.layer = 0
   this.collides = true;
@@ -14,7 +14,11 @@ function GameObject () {
   this.sprites = [];
   this.isGarbage = false;
   this.behaviour = undefined;
+  this.init = function(){};
   this.name = "";
+  this.speed = 0.0;
+  this.rotateSpeed = 0.01;
+  this.direction = 0;
 }
 
 GameObject.prototype.setBehaviour = function(behaviour) {
@@ -59,11 +63,22 @@ Level.prototype.render = function() {
 
     currentGameObject = this.gameObjects[i];
 
+    this.view.save();
+
+    this.view.translate(currentGameObject.position.x+currentGameObject.width/2,
+                        currentGameObject.position.y+currentGameObject.height/2);
+
+    //Yes, we have to rotate the entire view.
+    this.view.rotate(currentGameObject.rotation/Math.PI*180);
+
     this.view.drawImage(currentGameObject.sprite,
-                        currentGameObject.position.x,
-                        currentGameObject.position.y,
+                        -currentGameObject.width/2,
+                        -currentGameObject.height/2,
                         currentGameObject.width,
                         currentGameObject.height);
+
+
+    this.view.restore();
   }
 
 };
