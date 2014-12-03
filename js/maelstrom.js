@@ -8,9 +8,10 @@ function GameObject () {
   this.height = 0.0;
   this.rotation = 0; //TODO: rename this to rotation torque
   this.quadrant = 0;
-  this.layer = 0
+  this.layer = 0;
   this.collides = true;
-  this.collidingWith = [];
+  this.canCollideWith = [];
+  this.collidingWith = ""; //TODO: Make it capable of multicollision
   this.sprites = [];
   this.isGarbage = false;
   this.behaviour = undefined;
@@ -26,7 +27,28 @@ GameObject.prototype.setBehaviour = function(behaviour) {
 };
 
 GameObject.prototype.update = function() {
+
+  /*Update the game object quadrant*/
+  if(this.position.x > View.wMidpoint) { /*right*/
+
+    if(this.position.y > View.hMidpoint){
+      this.quadrant = 3;/*bottom*/
+    }else{
+      this.quadrant = 1;/*top*/
+    }
+
+  }else{ /*left*/
+
+    if(this.position.y > View.hMidpoint) {
+      this.quadrant = 2;/*bottom*/
+    }else{
+      this.quadrant = 0;/*top*/
+    }
+  }
+
+  /*Execute the game object behaviour*/
   this.behaviour();
+
 };
 
 /**********************************************
@@ -47,12 +69,56 @@ Level.prototype.init = function() {
 Level.prototype.update = function() {
 
   var i = 0, len = this.gameObjects.length;
+  var y = 0;
+  var targetGameObject;
+  var currentGameObject;
 
-  for (i, len; i < len; i++) {
+  /*Check collisions*/
+  for (i=0; i < len; i++) {
+
+    for(y=0; y < len; y++) {
+
+      if(i===y) /*cannot collide with self*/
+        break;
+
+      currentGameObject = this.gameObjects[i];
+
+      if(!currentGameObject.collides)
+        break;
+
+      targetGameObject = this.gameObjects[y];
+
+      if(!targetGameObject.collides)
+        break;
+      if(currentGameObject.layer !== targetGameObject.layer)
+        break;
+      if(currentGameObject.quadrant !== targetGameObject.quadrant)
+        break;
+      if(currentGameObject.canCollideWith.indexOf(targetGameObject.name) < 0)
+        break; /*can these gameobjects collide by name?*/
+
+      /*The gameobjects can collide, do expensive detection now*/
+      if(this.detectsCollisionBetween(currentGameObject,
+                                      targetGameObject)){
+
+           currentGameObject.collidingWith = targetGameObject.name;
+           targetGameObject.collidingWith  = currentGameObject.name;
+        }
+
+    }
+  }
+
+  /*Update game object state and behaviour*/
+  for (i=0; i < len; i++) {
     this.gameObjects[i].update();
   }
 
+
 };
+
+Level.prototype.detectsCollisionBetween = function(gameObject1, gameObject2) {
+  return true;
+}
 
 Level.prototype.render = function() {
 
@@ -143,6 +209,8 @@ var View = {
   context: null,
   width: 0,
   height: 0,
+  wMidpoint: 0,
+  hMidpoint: 0,
   init: function(width, height) {
     this.canvas = this.doc.createElement('canvas');
     this.context = this.canvas.getContext('2d');
@@ -150,6 +218,8 @@ var View = {
     this.canvas.height = height;
     this.width = width;
     this.height = height;
+    this.wMidpoint = width/2;
+    this.hMidpoint = height/2;
     this.doc.body.appendChild(this.canvas);
   }
 }
