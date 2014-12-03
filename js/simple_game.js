@@ -37,11 +37,13 @@
   var enemyCount = screenWidth;
   var enemiesArray = new Array(enemyCount);
 
+  var enemyName  = "asteroid";
+  var playerName = "player";
+  var bulletName = "bullet";
+
   for(var i=0;i <= enemyCount; i++) {
 
     enemiesArray[i] = new GameObject();
-
-    enemiesArray[i].name = "enemy"+i;
 
     /*This is the bahavior of each enemy it gets called each tick*/
     enemiesArray[i].behaviour = function(){
@@ -96,6 +98,8 @@
 
     enemiesArray[i].width      = randomIntFromRange(2, 20);
     enemiesArray[i].height     = randomIntFromRange(2, 20);
+    enemiesArray[i].canCollideWith = [playerName, bulletName];
+    enemiesArray[i].name       = enemyName;
   }
 
   /* Create a player */
@@ -103,6 +107,11 @@
   player.behaviour = function(){
 
       var deltaTime = Time.deltaTime();
+
+      if(this.collidingWith == enemyName) {
+        console.log("Collide->"+this.collidingWith);
+        this.collidingWith = "";
+      }
 
       if (Key.isDown(Key.UP)) {
         this.applyThrust = true;
@@ -159,7 +168,8 @@
   player.applyThrust = false;
   player.speed = 0.1;
   player.turnSpeed = 0.0005;
-
+  player.canCollideWith = [enemyName];
+  player.name = playerName;
   firstLevel.gameObjects = enemiesArray.concat(player);
   secondLevel.gameObjects = [];
 
