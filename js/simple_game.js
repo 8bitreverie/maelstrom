@@ -24,6 +24,10 @@
     return angle * (Math.PI/180);
   }
 
+  function randomFloatFromRange(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
   function randomIntFromRange(min, max) {
     return Math.floor(Math.random()*(max-min+1)+min);
   }
@@ -64,7 +68,7 @@
 
           //position at top edge
           //TODO: re-work to come from any edge
-          this.position.y = 0;//randomIntFromRange(0, View.height);
+          this.position.y = 0;
           this.position.x = randomIntFromRange(0, View.width);
           this.speed      = randomIntFromRange(1,3);
           this.velocity.x = 0;
@@ -72,7 +76,7 @@
 
           this.width      = randomIntFromRange(2, 10);
           this.height     = randomIntFromRange(2, 10);
-
+          this.rotation = 0;
         }
 
         //Update velocity
@@ -84,22 +88,25 @@
         this.position.x += this.velocity.x;// * deltaTime;
 
         //Rotation
-        this.rotation += (Math.PI*2)/60;
+        this.rotation += this.rotateSpeed;
 
     }
 
     //TODO: Move this into an init()
-    enemiesArray[i].sprite     = new Image();
-    enemiesArray[i].sprite.src = 'sprites/enemy.bmp';
-    enemiesArray[i].direction  = toRadians(randomIntFromRange(70,90));
-    enemiesArray[i].speed      = randomIntFromRange(1,3);
-    enemiesArray[i].position.y = 0;//randomIntFromRange(0, View.height);
-    enemiesArray[i].position.x = randomIntFromRange(0, View.width);
+    enemiesArray[i].sprite         = new Image();
+    enemiesArray[i].sprite.src     = 'sprites/enemy.bmp';
+    enemiesArray[i].direction      = toRadians(randomIntFromRange(70,90));
+    enemiesArray[i].speed          = randomIntFromRange(1,2);
+    enemiesArray[i].position.y     = randomIntFromRange(0,screenHeight);;
+    enemiesArray[i].position.x     = randomIntFromRange(0,screenWidth);
 
-    enemiesArray[i].width      = randomIntFromRange(2, 20);
-    enemiesArray[i].height     = randomIntFromRange(2, 20);
+    enemiesArray[i].width          = randomIntFromRange(2, 10);
+    enemiesArray[i].height         = randomIntFromRange(2, 10);
     enemiesArray[i].canCollideWith = [playerName, bulletName];
-    enemiesArray[i].name       = enemyName;
+    enemiesArray[i].name           = enemyName;
+    enemiesArray[i].rotateSpeed    = randomFloatFromRange(0.001,0.005);
+
+    console.log(enemiesArray[i].position.x);
   }
 
   /* Create a player */
