@@ -38,7 +38,7 @@
   var levelArray = [firstLevel, secondLevel];
 
   /* Create n enemies */
-  var enemyCount = screenWidth;
+  var enemyCount = 12;
   var enemiesArray = new Array(enemyCount);
 
   var enemyName  = "asteroid";
@@ -62,7 +62,7 @@
              this.position.x > View.width  ) {
 
           this.direction = toRadians(randomIntFromRange(70,90));
-          this.speed = randomIntFromRange(1,10);
+          this.speed = randomIntFromRange(1,3);
           scaleX = Math.cos(this.direction);
           scaleY = Math.sin(this.direction);
 
@@ -74,8 +74,8 @@
           this.velocity.x = 0;
           this.velocity.y = 0;
 
-          this.width      = randomIntFromRange(2, 10);
-          this.height     = randomIntFromRange(2, 10);
+          this.width      = randomIntFromRange(6, 10);
+          this.height     = randomIntFromRange(6, 10);
           this.rotation = 0;
         }
 
@@ -100,13 +100,12 @@
     enemiesArray[i].position.y     = randomIntFromRange(0,screenHeight);;
     enemiesArray[i].position.x     = randomIntFromRange(0,screenWidth);
 
-    enemiesArray[i].width          = randomIntFromRange(2, 10);
-    enemiesArray[i].height         = randomIntFromRange(2, 10);
+    enemiesArray[i].width          = randomIntFromRange(6, 10);
+    enemiesArray[i].height         = randomIntFromRange(6, 10);
     enemiesArray[i].canCollideWith = [playerName, bulletName];
     enemiesArray[i].name           = enemyName;
     enemiesArray[i].rotateSpeed    = randomFloatFromRange(0.001,0.005);
-
-    console.log(enemiesArray[i].position.x);
+    enemiesArray[i].setColliderRadius();
   }
 
   /* Create a player */
@@ -115,7 +114,7 @@
 
       var deltaTime = Time.deltaTime();
 
-      if(this.collidingWith == enemyName) {
+      if(this.collidingWith === enemyName) {
         console.log("Collide->"+this.collidingWith);
         this.collidingWith = "";
       }
@@ -177,6 +176,8 @@
   player.turnSpeed = 0.0005;
   player.canCollideWith = [enemyName];
   player.name = playerName;
+  player.setColliderRadius();
+
   firstLevel.gameObjects = enemiesArray.concat(player);
   secondLevel.gameObjects = [];
 
