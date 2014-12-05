@@ -12,6 +12,7 @@ function GameObject () {
   this.collides = true;
   this.canCollideWith = [];
   this.collidingWith = ""; //TODO: Make it capable of multicollision
+  this.colliderRadius = 0;
   this.sprites = [];
   this.isGarbage = false;
   this.behaviour = undefined;
@@ -27,6 +28,9 @@ GameObject.prototype.setBehaviour = function(behaviour) {
 };
 
 GameObject.prototype.update = function() {
+
+  /*Execute the game object behaviour*/
+  this.behaviour();
 
   /*Update the game object quadrant*/
   if(this.position.x > View.wMidpoint) { /*right*/
@@ -46,11 +50,17 @@ GameObject.prototype.update = function() {
     }
   }
 
-  /*Execute the game object behaviour*/
-  this.behaviour();
-
 };
 
+GameObject.prototype.setColliderRadius = function() {
+
+  if(this.width > this.height) {
+      this.colliderRadius = this.width;
+  }else{
+      this.colliderRadius = this.height;
+  }
+
+};
 /**********************************************
  *Level class
  **********************************************/
@@ -73,15 +83,19 @@ Level.prototype.update = function() {
   var targetGameObject;
   var currentGameObject;
 
-  /*Check collisions*/
+
   for (i=0; i < len; i++) {
+
+    /*Update the game object state*/
+    this.gameObjects[i].update();
+
+    /*Check collisions*/
+    currentGameObject = this.gameObjects[i];
 
     for(y=0; y < len; y++) {
 
       if(i===y) /*cannot collide with self*/
         break;
-
-      currentGameObject = this.gameObjects[i];
 
       if(!currentGameObject.collides)
         break;
@@ -90,10 +104,14 @@ Level.prototype.update = function() {
 
       if(!targetGameObject.collides)
         break;
+
       if(currentGameObject.layer !== targetGameObject.layer)
         break;
-      if(currentGameObject.quadrant !== targetGameObject.quadrant)
-        break;
+
+      //Bug: Quadrant update/detection is not functioning correctly
+      //if(currentGameObject.quadrant != targetGameObject.quadrant)
+      //  break;
+
       if(currentGameObject.canCollideWith.indexOf(targetGameObject.name) < 0)
         break; /*can these gameobjects collide by name?*/
 
@@ -101,6 +119,7 @@ Level.prototype.update = function() {
       if(this.detectsCollisionBetween(currentGameObject,
                                       targetGameObject)){
 
+           console.log("COLLISION!");
            currentGameObject.collidingWith = targetGameObject.name;
            targetGameObject.collidingWith  = currentGameObject.name;
         }
@@ -108,16 +127,25 @@ Level.prototype.update = function() {
     }
   }
 
-  /*Update game object state and behaviour*/
-  for (i=0; i < len; i++) {
-    this.gameObjects[i].update();
-  }
-
-
 };
 
 Level.prototype.detectsCollisionBetween = function(gameObject1, gameObject2) {
-  return true;
+  var dx = (gameObject1.position.x + gameObject1.colliderRadius) -
+           (gameObject2.position.x + gameObject2.colliderRadius);
+
+
+  var dy = (gameObject1.position.y + gameObject1.colliderRadius) -
+           (gameObject2.position.y + gameObject2.colliderRadius);
+
+  var distance = Math.sqrt(dx * dx + dy * dy);
+
+  //console.log("Distance:"+distance);
+  if (distance < (gameObject1.colliderRadius + gameObject2.colliderRadius)) {
+    // collision detected!
+    return true;
+  }else{
+    return false;
+  }
 }
 
 Level.prototype.render = function() {
