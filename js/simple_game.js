@@ -119,21 +119,59 @@
         this.collidingWith = "";
       }
 
-      if (Key.isDown(Key.UP)) {
+      if(Key.isDown(Key.UP)){
         this.applyThrust = true;
       }else{
         this.applyThrust = false;
       }
 
-      if (Key.isDown(Key.LEFT)) {
+      if(Key.isDown(Key.LEFT)){
         this.rotation += this.turnSpeed * -1;
       }
 
-      if (Key.isDown(Key.RIGHT)) {
+      if(Key.isDown(Key.RIGHT)){
         this.rotation += this.turnSpeed * 1;
       }
 
-      /*Stay inside the view*/
+      if(Key.isDown(Key.SPACE)){
+
+        console.log("Creating bullet");
+        //TODO : this would be a common operation
+        // move it to the Level
+        var bullet = new GameObject();
+        bullet.behaviour = function(){
+
+          this.velocity.x += this.speed;
+          this.velocity.y += this.speed;
+          this.position.x -= this.velocity.x;
+          this.position.y -= this.velocity.y;
+
+          if (this.position.x >= View.height ||
+              this.position.x <= 0 ||
+              this.position.y >= View.width ||
+              this.position.y <= 0 ) {
+
+              console.log("deleting a bullet");
+              this.die();
+
+          }
+
+        }
+
+        bullet.width = 5;
+        bullet.height = 5;
+        bullet.position.x = this.position.x;
+        bullet.position.y = this.position.y;
+        bullet.sprite = new Image(bullet.width, bullet.height);
+        bullet.sprite.src = 'sprites/player.bmp';
+        bullet.speed = 0.1;
+        bullet.canCollideWith = [enemyName];
+        bullet.name = bulletName;
+        this.level.gameObjects.push(bullet);
+
+      }
+
+      /*Ship must stay inside the view*/
       if(this.position.x < this.width){
         this.position.x = View.width;
       }

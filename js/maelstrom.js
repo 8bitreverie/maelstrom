@@ -16,21 +16,26 @@ function GameObject () {
   this.sprites = [];
   this.isGarbage = false;
   this.behaviour = undefined;
-  this.init = function(){};
   this.name = "";
   this.speed = 0.0;
   this.rotateSpeed = 0.01;
   this.direction = 0;
+  this.level = null;
+  this.isDead = false;
 }
+
+GameObject.prototype.init = function(level) {
+  this.level = level;
+};
 
 GameObject.prototype.setBehaviour = function(behaviour) {
   this.behavior = behaviour;
 };
 
-GameObject.prototype.update = function() {
+GameObject.prototype.update = function(myLevel) {
 
   /*Execute the game object behaviour*/
-  this.behaviour();
+  this.behaviour(myLevel);
 
   /*Update the game object quadrant*/
   if(this.position.x > View.wMidpoint) { /*right*/
@@ -61,10 +66,17 @@ GameObject.prototype.setColliderRadius = function() {
   }
 
 };
+
+GameObject.prototype.die = function() {
+
+  this.isDead = true;
+
+};
+
 /**********************************************
  *Level class
  **********************************************/
-function Level (name) {
+function Level(name) {
   this.name = name;
   this.backgroundImg = "";
   this.gameObjects = [];
@@ -72,9 +84,25 @@ function Level (name) {
 }
 
 Level.prototype.init = function() {
+
   console.log( "Loading level " + this.name);
+  var i = 0;
   this.view = View.context;
+
 };
+
+Level.prototype.garbageCollect = function() {
+
+  for(var i=0; i <= this.gameObjects.length; i++) {
+
+    //BUG: This is failing
+    if(this.gameObjects[i]) {
+    //  delete this.gameObjects[i];
+    //  this.level.gameObjects.splice(i, 1);
+    }
+  }
+
+}
 
 Level.prototype.update = function() {
 
@@ -82,20 +110,25 @@ Level.prototype.update = function() {
   var y = 0;
   var targetGameObject;
   var currentGameObject;
-
+  var thisLevel = this;
 
   for (i=0; i < len; i++) {
 
-    /*Update the game object state*/
+    /*Ensure GO is bound to the level*/
+    if(this.gameObjects[i].level === null) {
+      this.gameObjects[i].level = thisLevel;
+    }
+
+    /*Update the game object state.*/
     this.gameObjects[i].update();
 
     /*Check collisions*/
-    currentGameObject = this.gameObjects[i];
-
-    for(y=0; y < len; y++) {
+    for(y=0; y < this.gameObjects.length; y++) {
 
       if(i===y) /*cannot collide with self*/
         break;
+
+      currentGameObject = this.gameObjects[i];
 
       if(!currentGameObject.collides)
         break;
@@ -126,6 +159,9 @@ Level.prototype.update = function() {
 
     }
   }
+
+  //Collect dead gameObjects (just linear at the moment)
+  this.garbageCollect();
 
 };
 
@@ -263,6 +299,7 @@ var Key = {
   UP: 38,
   RIGHT: 39,
   DOWN: 40,
+  SPACE: 32,
 
   isDown: function(keyCode) {
     return this._pressed[keyCode];
