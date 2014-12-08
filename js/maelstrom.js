@@ -77,10 +77,14 @@ GameObject.prototype.die = function() {
  *Level class
  **********************************************/
 function Level(name) {
+
   this.name = name;
   this.backgroundImg = "";
   this.gameObjects = [];
   this.view = null;
+  this.maxGarbage = 30;
+  this.garbageCount = 0;
+
 }
 
 Level.prototype.init = function() {
@@ -93,14 +97,15 @@ Level.prototype.init = function() {
 
 Level.prototype.garbageCollect = function() {
 
-  for(var i=0; i <= this.gameObjects.length; i++) {
-
-    //BUG: This is failing
-    if(this.gameObjects[i]) {
-    //  delete this.gameObjects[i];
-    //  this.level.gameObjects.splice(i, 1);
+  this.gameObjects = this.gameObjects.filter(function(go){
+    if(go.isDead) {
+      delete go;
+    }else{
+      return go;
     }
-  }
+  });
+
+  this.garbageSize = 0;
 
 }
 
@@ -121,6 +126,10 @@ Level.prototype.update = function() {
 
     /*Update the game object state.*/
     this.gameObjects[i].update();
+
+    if(this.gameObjects[i].isDead) {
+      this.garbageCount++;
+    }
 
     /*Check collisions*/
     for(y=0; y < this.gameObjects.length; y++) {
@@ -155,13 +164,15 @@ Level.prototype.update = function() {
            console.log("COLLISION!");
            currentGameObject.collidingWith = targetGameObject.name;
            targetGameObject.collidingWith  = currentGameObject.name;
-        }
+      }
 
     }
   }
 
-  //Collect dead gameObjects (just linear at the moment)
-  this.garbageCollect();
+  /*Clean up "dead" game objects*/
+  if( this.garbageCount >= this.maxGarbage ) {
+    this.garbageCollect();
+  }
 
 };
 
@@ -175,9 +186,7 @@ Level.prototype.detectsCollisionBetween = function(gameObject1, gameObject2) {
 
   var distance = Math.sqrt(dx * dx + dy * dy);
 
-  //console.log("Distance:"+distance);
   if (distance < (gameObject1.colliderRadius + gameObject2.colliderRadius)) {
-    // collision detected!
     return true;
   }else{
     return false;

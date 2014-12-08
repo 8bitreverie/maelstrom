@@ -135,7 +135,6 @@
 
       if(Key.isDown(Key.SPACE)){
 
-        console.log("Creating bullet");
         //TODO : this would be a common operation
         // move it to the Level
         var bullet = new GameObject();
@@ -146,12 +145,12 @@
           this.position.x -= this.velocity.x;
           this.position.y -= this.velocity.y;
 
+          /*Delete bullet if goes off screen*/
           if (this.position.x >= View.height ||
               this.position.x <= 0 ||
               this.position.y >= View.width ||
               this.position.y <= 0 ) {
 
-              console.log("deleting a bullet");
               this.die();
 
           }

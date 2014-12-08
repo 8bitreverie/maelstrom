@@ -2,3 +2,8 @@ body {
     text-align: center;
     background-color: white;
 }
+
+canvas {
+    border: 1px solid;
+}
+
