@@ -1,4 +1,4 @@
-maelstrom
+MAELSTROM      
 =========
 
 Simple OO JavaScript Canvas Base GameEngine With An Example Game
