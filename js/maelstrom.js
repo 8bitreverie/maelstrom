@@ -22,6 +22,9 @@ function GameObject () {
   this.direction = 0;
   this.level = null;
   this.isDead = false;
+  this.age = 0;
+  this.isUI = false;
+  this.uiText = "";
 }
 
 GameObject.prototype.init = function(level) {
@@ -84,13 +87,14 @@ function Level(name) {
   this.view = null;
   this.maxGarbage = 30;
   this.garbageCount = 0;
+  this.engineRef = null;
 
 }
 
-Level.prototype.init = function() {
+Level.prototype.init = function(engineReference) {
 
   console.log( "Loading level " + this.name);
-  var i = 0;
+  this.engineRef = engineReference;
   this.view = View.context;
 
 };
@@ -138,6 +142,9 @@ Level.prototype.update = function() {
         break;
 
       currentGameObject = this.gameObjects[i];
+
+      if(currentGameObject.isUI)
+        break;
 
       if(!currentGameObject.collides)
         break;
@@ -210,12 +217,20 @@ Level.prototype.render = function() {
     //Yes, we have to rotate the entire view.
     this.view.rotate(currentGameObject.rotation/Math.PI*180);
 
-    this.view.drawImage(currentGameObject.sprite,
-                        -currentGameObject.width/2,
-                        -currentGameObject.height/2,
-                        currentGameObject.width,
-                        currentGameObject.height);
+    if(!currentGameObject.isUI) {
 
+      this.view.drawImage(currentGameObject.sprite,
+                          -currentGameObject.width/2,
+                          -currentGameObject.height/2,
+                          currentGameObject.width,
+                          currentGameObject.height);
+
+    }else{
+
+      this.view.fillText(currentGameObject.uiText,
+                         currentGameObject.position.x,
+                         currentGameObject.position.y);
+    }
 
     this.view.restore();
   }
@@ -231,6 +246,9 @@ function Maelstrom(levelArray, width, height) {
   this.viewHeight = height ? height : 256;
   this.levelArray = levelArray;
   this.currentLevel = 0;
+
+  /*Because these have to survive over level loads*/
+  this.globals = {};
 
 };
 
@@ -252,7 +270,7 @@ Maelstrom.prototype.run= function() {
 
   thisEngine.init();
 
-  this.levelArray[this.currentLevel].init();
+  this.levelArray[this.currentLevel].init(thisEngine);
 
   function gameLoop() {
 
@@ -284,6 +302,9 @@ var View = {
   height: 0,
   wMidpoint: 0,
   hMidpoint: 0,
+  uiTextColor: "black",
+  uiFont: "bold 16px Arial",
+
   init: function(width, height) {
     this.canvas = this.doc.createElement('canvas');
     this.context = this.canvas.getContext('2d');
@@ -293,6 +314,7 @@ var View = {
     this.height = height;
     this.wMidpoint = width/2;
     this.hMidpoint = height/2;
+    this.context.font = this.uiFont;
     this.doc.body.appendChild(this.canvas);
   }
 }

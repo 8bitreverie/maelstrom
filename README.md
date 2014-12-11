@@ -17,6 +17,9 @@ Remove .init from engine, figure out nicer way to do that because it is cluttere
 Refactor the demo game, write a few more demos to demonstrate simple games/effects
 Add rotation and torque
 Move Radians to angles/ angles to radians out into helper functions
+Add GameObject age (if go > age die)
+Add Score
+Add particle effects for ship
 
 Resources Used
 =========
