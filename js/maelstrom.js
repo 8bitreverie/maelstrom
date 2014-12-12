@@ -205,6 +205,7 @@ Level.prototype.render = function() {
   var currentGameObject;
   var i = 0, len = this.gameObjects.length;
 
+  console.log(len);
   for (i, len; i < len; i++) {
 
     currentGameObject = this.gameObjects[i];
@@ -256,7 +257,7 @@ Maelstrom.prototype.init = function() {
 
   Time.init();
   View.init(this.viewWidth, this.viewHeight);
-  Sound.load("sounds/test.mp3");
+  Sound.loadLoop("sounds/test.mp3");
   window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
   window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 
@@ -270,12 +271,16 @@ Maelstrom.prototype.run= function() {
 
   thisEngine.init();
 
-  this.levelArray[this.currentLevel].init(thisEngine);
+  /*initialize the levels*/
+  this.levelArray.forEach(
+    function initializeLevels(level) { level.init(thisEngine); }
+  );
 
   function gameLoop() {
 
     Time.update();
     View.context.clearRect( 0, 0, View.canvas.width, View.canvas.height);
+
     thisEngine.levelArray[thisEngine.currentLevel].update();
     thisEngine.levelArray[thisEngine.currentLevel].render();
 
@@ -289,6 +294,24 @@ Maelstrom.prototype.run= function() {
 
 
 };
+
+Maelstrom.prototype.loadLevel = function(name) {
+  this.currentLevel = this.getLevelIndexFromName(name);
+  if(this.currentLevel < 0) {
+    console.log("Failed to find level " + name);
+    throw "loadLevel Failed";
+  }
+};
+
+Maelstrom.prototype.getLevelIndexFromName = function(name) {
+
+  for(var i = 0; i < this.levelArray.length; i++) {
+    if(this.levelArray[i].name === name) {
+      return i;
+    }
+  }
+  return -1;
+}
 
 /*
  * A more intuitive abstraction for the canvas dom object
@@ -375,7 +398,7 @@ var Time = {
  * TODO: Refactor this, choose where the sound stuff should go
  */
 var Sound = {
-  load: function(url) {
+  loadLoop: function(url) {
     var soundBuffer = null;
 
     // Fix up prefixing
@@ -397,6 +420,12 @@ var Sound = {
       }, onError);
     }
     request.send();
+  },
+
+  playOnce: function(sound) {
+        var snd = new Audio(sound);
+        snd.play();
+        snd.currentTime=0;
   }
 
 }

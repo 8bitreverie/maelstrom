@@ -85,6 +85,7 @@
           this.level.engineRef.globals.score++;
           this.collidingWith = "";
           reset = true;
+          Sound.playOnce("sounds/smash.wav");
         }
 
         //Reset
@@ -165,15 +166,15 @@
         this.level.engineRef.globals.lives-=1;
         this.collidingWith = "";
 
-        if(this.level.engineRef.globals.lives == 0) {
+        if(this.level.engineRef.globals.lives <= 0) {
           /*End game*/
-          console.log("Load level goes here.");
-          this.level.engineRef.LoadLevel("NAME");
+          this.level.engineRef.loadLevel("death");
         }
 
         /*Reset the position of the ship*/
         this.position.x = View.height/2;
         this.position.y = View.height/2;
+
       }
 
       if(Key.isDown(Key.UP)){
@@ -194,6 +195,9 @@
       if(Key.isDown(Key.SPACE) && ((this.thisTime - this.lastTime) >= 1)){
 
         this.lastTime = this.thisTime;
+
+        //TODO: Find a better way to do this
+        Sound.playOnce("sounds/laser.wav");
 
       /*********************************************************
        * Bullet
@@ -286,11 +290,37 @@
   player.setColliderRadius();
   player.thisTime = 0;
   player.lastTime = 0;
+
   firstLevel.gameObjects = asteroidArray;
   firstLevel.gameObjects = firstLevel.gameObjects.concat(player)
   firstLevel.gameObjects = firstLevel.gameObjects.concat(scoreUI);
   firstLevel.gameObjects = firstLevel.gameObjects.concat(livesUI);
-  secondLevel.gameObjects = [];
+
+  /***************************************************************
+   * Ui text for second level death screen
+   ***************************************************************/
+  var deathScreenUI = new GameObject();
+  deathScreenUI.behaviour = function () {
+
+    var score = this.level.engineRef.globals.score;
+
+    //TODO: Make this dynamic calculation
+    this.position.x = 45;
+    this.position.y = 125;
+
+    this.uiText = "You scored:" + score;
+    this.uiText += "\n Press Space To Play Again!";
+
+    this.level.engineRef.globals.score = 0;
+    this.level.engineRef.globals.lives = 3;
+
+    if(Key.isDown(Key.SPACE)){
+      this.level.engineRef.loadLevel("main");
+    }
+
+  };
+  deathScreenUI.isUI = true;
+  secondLevel.gameObjects = [deathScreenUI];
 
   /* Construct and run the game engine */
   var myEngine = new Maelstrom(levelArray, screenWidth, screenHeight);
