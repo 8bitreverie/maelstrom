@@ -22,6 +22,9 @@ function GameObject () {
   this.direction = 0;
   this.level = null;
   this.isDead = false;
+  this.age = 0;
+  this.isUI = false;
+  this.uiText = "";
 }
 
 GameObject.prototype.init = function(level) {
@@ -84,13 +87,14 @@ function Level(name) {
   this.view = null;
   this.maxGarbage = 30;
   this.garbageCount = 0;
+  this.engineRef = null;
 
 }
 
-Level.prototype.init = function() {
+Level.prototype.init = function(engineReference) {
 
   console.log( "Loading level " + this.name);
-  var i = 0;
+  this.engineRef = engineReference;
   this.view = View.context;
 
 };
@@ -138,6 +142,9 @@ Level.prototype.update = function() {
         break;
 
       currentGameObject = this.gameObjects[i];
+
+      if(currentGameObject.isUI)
+        break;
 
       if(!currentGameObject.collides)
         break;
@@ -198,6 +205,7 @@ Level.prototype.render = function() {
   var currentGameObject;
   var i = 0, len = this.gameObjects.length;
 
+  console.log(len);
   for (i, len; i < len; i++) {
 
     currentGameObject = this.gameObjects[i];
@@ -210,12 +218,20 @@ Level.prototype.render = function() {
     //Yes, we have to rotate the entire view.
     this.view.rotate(currentGameObject.rotation/Math.PI*180);
 
-    this.view.drawImage(currentGameObject.sprite,
-                        -currentGameObject.width/2,
-                        -currentGameObject.height/2,
-                        currentGameObject.width,
-                        currentGameObject.height);
+    if(!currentGameObject.isUI) {
 
+      this.view.drawImage(currentGameObject.sprite,
+                          -currentGameObject.width/2,
+                          -currentGameObject.height/2,
+                          currentGameObject.width,
+                          currentGameObject.height);
+
+    }else{
+
+      this.view.fillText(currentGameObject.uiText,
+                         currentGameObject.position.x,
+                         currentGameObject.position.y);
+    }
 
     this.view.restore();
   }
@@ -232,13 +248,16 @@ function Maelstrom(levelArray, width, height) {
   this.levelArray = levelArray;
   this.currentLevel = 0;
 
+  /*Because these have to survive over level loads*/
+  this.globals = {};
+
 };
 
 Maelstrom.prototype.init = function() {
 
   Time.init();
   View.init(this.viewWidth, this.viewHeight);
-  Sound.load("sounds/test.mp3");
+  Sound.loadLoop("sounds/test.mp3");
   window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
   window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 
@@ -252,12 +271,16 @@ Maelstrom.prototype.run= function() {
 
   thisEngine.init();
 
-  this.levelArray[this.currentLevel].init();
+  /*initialize the levels*/
+  this.levelArray.forEach(
+    function initializeLevels(level) { level.init(thisEngine); }
+  );
 
   function gameLoop() {
 
     Time.update();
     View.context.clearRect( 0, 0, View.canvas.width, View.canvas.height);
+
     thisEngine.levelArray[thisEngine.currentLevel].update();
     thisEngine.levelArray[thisEngine.currentLevel].render();
 
@@ -272,6 +295,24 @@ Maelstrom.prototype.run= function() {
 
 };
 
+Maelstrom.prototype.loadLevel = function(name) {
+  this.currentLevel = this.getLevelIndexFromName(name);
+  if(this.currentLevel < 0) {
+    console.log("Failed to find level " + name);
+    throw "loadLevel Failed";
+  }
+};
+
+Maelstrom.prototype.getLevelIndexFromName = function(name) {
+
+  for(var i = 0; i < this.levelArray.length; i++) {
+    if(this.levelArray[i].name === name) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 /*
  * A more intuitive abstraction for the canvas dom object
  */
@@ -284,6 +325,9 @@ var View = {
   height: 0,
   wMidpoint: 0,
   hMidpoint: 0,
+  uiTextColor: "black",
+  uiFont: "bold 16px Arial",
+
   init: function(width, height) {
     this.canvas = this.doc.createElement('canvas');
     this.context = this.canvas.getContext('2d');
@@ -293,6 +337,7 @@ var View = {
     this.height = height;
     this.wMidpoint = width/2;
     this.hMidpoint = height/2;
+    this.context.font = this.uiFont;
     this.doc.body.appendChild(this.canvas);
   }
 }
@@ -353,7 +398,7 @@ var Time = {
  * TODO: Refactor this, choose where the sound stuff should go
  */
 var Sound = {
-  load: function(url) {
+  loadLoop: function(url) {
     var soundBuffer = null;
 
     // Fix up prefixing
@@ -375,6 +420,12 @@ var Sound = {
       }, onError);
     }
     request.send();
+  },
+
+  playOnce: function(sound) {
+        var snd = new Audio(sound);
+        snd.play();
+        snd.currentTime=0;
   }
 
 }
