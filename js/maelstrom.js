@@ -11,7 +11,7 @@ function GameObject () {
   this.layer = 0;
   this.collides = true;
   this.canCollideWith = [];
-  this.onCollide = function(collideWith){}
+  this.onCollide = function(collidingWith){}
   this.colliderRadius = 0;
   this.sprites = [];
   this.isGarbage = false;
@@ -19,7 +19,6 @@ function GameObject () {
   this.reset = function(){};
   this.name = "";
   this.speed = 0.0;
-  this.originalSpeed = 0.0;
   this.rotateSpeed = 0.01;
   this.direction = 0;
   this.level = null;
