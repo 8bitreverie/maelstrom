@@ -5,5 +5,12 @@ body {
 
 canvas {
     border: 1px solid;
+    font-family: PressStart;
 }
+
+@font-face {
+    font-family: 'PressStart';
+    src: url('../fonts/PressStart2P.ttf');
+}
+
 

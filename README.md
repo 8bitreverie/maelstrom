@@ -47,3 +47,7 @@ http://downloads.khinsider.com/game-soundtracks/album/ultima-iii-exodus/uecastle
 
 Other
 http://www.somethinghitme.com/2013/11/13/snippets-i-always-forget-movement/
+
+Fonts
+http://www.fontspace.com/category/video%20games?p=2
+
