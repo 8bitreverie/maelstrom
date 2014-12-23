@@ -79,6 +79,29 @@ GameObject.prototype.die = function() {
 };
 
 /**********************************************
+ * Utils class
+ **********************************************/
+var Utils = {
+
+  toDegrees: function(angle) {
+    return angle * (180/Math.PI);
+  },
+
+  toRadians: function(angle) {
+    return angle * (Math.PI/180);
+  },
+
+  randomFloatFromRange: function(min, max) {
+    return Math.random() * (max - min) + min;
+  },
+
+  randomIntFromRange: function (min, max) {
+    return Math.floor(Math.random()*(max-min+1)+min);
+  }
+
+};
+
+/**********************************************
  *Level class
  **********************************************/
 function Level(name) {
@@ -362,7 +385,7 @@ var View = {
   wMidpoint: 0,
   hMidpoint: 0,
   uiTextColor: "black",
-  uiFont: "bold 16px Arial",
+  uiFont: "",
 
   init: function(width, height) {
     this.canvas = this.doc.createElement('canvas');
@@ -375,8 +398,13 @@ var View = {
     this.hMidpoint = height/2;
     this.context.font = this.uiFont;
     this.doc.body.appendChild(this.canvas);
-  }
-}
+  },
+
+  setFont: function(fontName) {
+    this.uiFont = fontName;
+  },
+
+};
 
 /*
  * Keyboard input class
