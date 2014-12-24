@@ -5,12 +5,12 @@ body {
 
 canvas {
     border: 1px solid;
-    font-family: PressStart;
+    font-family: Trench;
 }
 
 @font-face {
-    font-family: 'PressStart';
-    src: url('../fonts/PressStart2P.ttf');
+    font-family: 'Trench';
+    src: url('../fonts/trench100free.otf');
 }
 
 
