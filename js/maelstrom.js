@@ -279,11 +279,9 @@ Level.prototype.render = function() {
 /***********************************************
  * Engine class
  **********************************************/
-function Maelstrom(levelArray, width, height) {
+function Maelstrom() {
 
-  this.viewWidth  = width ? width : 256 ;
-  this.viewHeight = height ? height : 256;
-  this.levelArray = levelArray;
+  this.levelArray = null;
   this.currentLevel = 0;
 
   /*Because these have to survive over level loads*/
@@ -291,11 +289,16 @@ function Maelstrom(levelArray, width, height) {
 
 };
 
+Maelstrom.prototype.addLevels = function(levels) {
+
+  this.levelArray = levels;
+
+};
+
 Maelstrom.prototype.init = function() {
 
   Sound.init();
   Time.init();
-  View.init(this.viewWidth, this.viewHeight);
   this.currentLevel = 0;
   window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
   window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
