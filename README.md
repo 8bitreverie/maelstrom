@@ -42,8 +42,11 @@ http://www.flashkit.com/imagesvr_ce/flashkit/loops/Techno-Dance/Rave/Trancy-AlaS
 Laser Sound
 http://soundbible.com/1087-Laser.html
 
+Main Music
+http://openmusicarchive.org/audio/In_The_Dark_Flashes.mp3
+
 Death music
-http://downloads.khinsider.com/game-soundtracks/album/ultima-iii-exodus/uecastle-s.mp3
+http://openmusicarchive.org/audio/April_Kisses.mp3
 
 Other
 http://www.somethinghitme.com/2013/11/13/snippets-i-always-forget-movement/

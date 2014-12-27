@@ -27,6 +27,8 @@ function GameObject () {
   this.age = 0;
   this.isUI = false;
   this.uiText = "";
+  this.thisTime = 0;
+  this.lastTime = 0;
 }
 
 GameObject.prototype.init = function(level) {
@@ -495,7 +497,7 @@ var Sound = {
 
   playLoop: function(name) {
     console.log("playLoop: " + name);
-    this._playSound(name, true);
+    this._playSound(name, true, 1);
   },
 
   printDetails: function(name) {
@@ -506,21 +508,43 @@ var Sound = {
     }
   },
 
-  playOnce: function(name) {
-    this._playSound(name, false);
+  playOnce: function(name, volume) {
+    this._playSound(name, false, volume);
   },
 
-  _playSound: function (name, isLoop) {
+  _playSound: function (name, isLoop, volume) {
+
+    /*If this sound was started already and is playing return*/
+    if(this.sounds[name]) {
+      this.sounds[name].onended = Sound.unmarkIsPlaying(name);
+      if(this.sounds[name].isPlaying) {
+          return;
+      }
+    }
 
     this.sounds[name] = this.context.createBufferSource();
     this._createBuffer(name,name);
     this.sounds[name].connect(this.context.destination);
-    if(isLoop)
+    this.sounds[name].volume = volume;
+    /*If it is a loop make sure the audio buffer loops
+     *otherwise add a callback to unmark the "isPlaying"
+     *property.
+     */
+    if(isLoop) {
       this.sounds[name].loop = true;
-    this.sounds[name].start(0);
-    if(isLoop)
-      this.sounds[name].isPlaying = true;
+    }else{
+      this.sounds[name].onended = Sound.unmarkIsPlaying(name);
+    }
 
+
+    this.sounds[name].start(0);
+    this.sounds[name].isPlaying = true;
+
+  },
+
+  unmarkIsPlaying: function(name) {
+     this.sounds[name].currentTime = 0;
+     this.sounds[name].isPlaying = false;
   },
 
   _createBuffer: function(url, name) {

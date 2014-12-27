@@ -6,13 +6,15 @@ var MAIN = {
     Cache.loadImage("asteroid", "sprites/enemy.bmp");
     Cache.loadImage("bullet", "sprites/player.bmp");
     Cache.loadImage("player", "sprites/player.bmp");
+    Cache.loadImage("shield", "sprites/player_shield.bmp");
     Cache.loadImage("explosion", "sprites/explode.bmp");
     Cache.loadSound("asteroid-smash","sounds/smash.wav");
     Cache.loadSound("player-explode","sounds/explode.wav");
     Cache.loadSound("lazer","sounds/laser.wav");
+    Cache.loadSound("thruster","sounds/thrusters.wav");
 
     this.level   = new Level("main");
-    this.level.music = "music/main.mp3";
+    this.level.music = "music/main_theme.mp3";
 
     /* Create n asteroids */
     var asteroidCount = 12;
@@ -41,7 +43,7 @@ var MAIN = {
       this.uiText = "Ships: " + this.level.engineRef.globals.lives;
     };
     livesUI.isUI = true;
-    livesUI.position.x = 190;
+    livesUI.position.x = 210;
     livesUI.position.y = 10;
 
     /**********************************************************************
@@ -129,7 +131,7 @@ var MAIN = {
 
         /*Reset asteroid*/
         this.reset();
-        Sound.playOnce(Cache.sounds["asteroid-smash"]);
+        Sound.playOnce(Cache.sounds["asteroid-smash"], .05);
 
       }
 
@@ -139,7 +141,6 @@ var MAIN = {
 
           var scaleX = Math.cos(this.direction);
           var scaleY = Math.sin(this.direction);
-          var deltaTime = Time.deltaTime();
           var reset = false;
 
           //Reset
@@ -165,10 +166,9 @@ var MAIN = {
             scaleY = Math.sin(this.direction);
 
             //position at top edge
-            //TODO: re-work to come from any edge
             this.position.y = 0;
             this.position.x = Utils.randomIntFromRange(0, View.width);
-            this.speed      = Utils.randomIntFromRange(1,3);
+            this.speed      = Utils.randomIntFromRange(30,70);
             this.velocity.x = 0;
             this.velocity.y = 0;
 
@@ -182,8 +182,8 @@ var MAIN = {
           this.velocity.y = (this.speed * scaleY);
 
           //Move
-          this.position.y += this.velocity.y;// * deltaTime;
-          this.position.x += this.velocity.x;// * deltaTime;
+          this.position.y += this.velocity.y * Time.deltaTime();
+          this.position.x += this.velocity.x * Time.deltaTime();
 
           //Rotation
           this.rotation += this.rotateSpeed;
@@ -192,10 +192,9 @@ var MAIN = {
 
     var asteroidReset = function() {
       this.direction  = Utils.toRadians(Utils.randomIntFromRange(70,90));
-      this.speed      = Utils.randomIntFromRange(1,3);
       this.position.y = 0;
       this.position.x = Utils.randomIntFromRange(0, View.width);
-      this.speed      = Utils.randomIntFromRange(1,3);
+      this.speed      = Utils.randomIntFromRange(30,70);
       this.velocity.x = 0;
       this.velocity.y = 0;
     };
@@ -213,7 +212,7 @@ var MAIN = {
       //TODO: Move this into an init()
       asteroidArray[i].sprite         = Cache.images["asteroid"];
       asteroidArray[i].direction      = Utils.toRadians(Utils.randomIntFromRange(70,90));
-      asteroidArray[i].speed          = Utils.randomIntFromRange(1,2);
+      asteroidArray[i].speed          = Utils.randomIntFromRange(30,70);
       asteroidArray[i].position.y     = Utils.randomIntFromRange(0,View.width);;
       asteroidArray[i].position.x     = Utils.randomIntFromRange(0,View.height);
 
@@ -243,16 +242,20 @@ var MAIN = {
 
     player.onCollide = function(collidingWith) {
 
+        if(this.invulnerable) {
+          return;
+        }
+
         /* Did we just die by colliding with an asteroid?
-         * And was it at least 1 second since the last collision?
+         * And was it at least 2 seconds since the last collision?
          */
-        if((collidingWith.name === asteroidName) &&
-           ((this.thisTime - this.lastTime) >= 2)) {
+        if((collidingWith.name === asteroidName)) {
 
           /*Make the ship explode and stop*/
           Sound.playOnce(Cache.sounds["player-explode"]);
           this.sprite = Cache.images["explosion"];
           this.isTempDead = true;
+          this.invulnerable = true;
           this.velocity.x = 0;
           this.velocity.y = 0;
           this.level.engineRef.globals.lives-=1;
@@ -276,17 +279,24 @@ var MAIN = {
         /*
          * Reset the sprite of the ship from explosion to ship
          * and place the ship back in the middle of the screen.
+         * The delay is so that the explosion sprite shows up
+         * for a little while.
          */
         if(this.isTempDead && ((this.thisTime - this.lastTime) >= 0.5)) {
 
-          /*Respawn the ship in the centre of the screen.*/
-          this.sprite = Cache.images["player"];
-          //this.speed = this.originalSpeed;
+          /*Respawn the ship in the centre of the screen, and turn shield on*/
+          this.sprite = Cache.images["shield"];
           this.isTempDead = false;
           this.position.x = View.height/2;
           this.position.y = View.height/2;
-          this.lastTime = this.thisTime;
+          this.lastTime   = this.thisTime;
 
+        }
+
+        /* If 5 seconds have passed, remove invulnerability shield*/
+        if(this.invulnerable && (this.thisTime - this.lastTime) >= 5) {
+          this.invulnerable = false;
+          this.sprite       = Cache.images["player"];
         }
 
         if(Key.isDown(Key.UP)){
@@ -319,8 +329,9 @@ var MAIN = {
 
             this.velocity.x += Math.cos((this.rotation/Math.PI*180)) * this.speed;
             this.velocity.y += Math.sin((this.rotation/Math.PI*180)) * this.speed;
-            this.position.x -= this.velocity.x;
-            this.position.y -= this.velocity.y;
+
+            this.position.x -= this.velocity.x * Time.deltaTime();
+            this.position.y -= this.velocity.y * Time.deltaTime();
 
             /*Delete bullet if goes off screen*/
             if (this.position.x >= View.height ||
@@ -340,6 +351,7 @@ var MAIN = {
             if(collidingWith.name === asteroidName) {
               this.die();
             }
+
           }
 
           bullet.width = 5;
@@ -382,6 +394,10 @@ var MAIN = {
           if(this.applyThrust){
             this.velocity.x += Math.cos((this.rotation/Math.PI*180)) * this.speed;
             this.velocity.y += Math.sin((this.rotation/Math.PI*180)) * this.speed;
+            this.makeSmoke();
+
+            //TODO: Fix volume
+            //Sound.playOnce(Cache.sounds["thruster"], 0.003);
           }
 
           /* apply friction */
@@ -389,8 +405,8 @@ var MAIN = {
           this.velocity.y *= 0.98;
 
           /* apply velocities */
-          this.position.x -= this.velocity.x;
-          this.position.y -= this.velocity.y;
+          this.position.x -= this.velocity.x * Time.deltaTime();
+          this.position.y -= this.velocity.y * Time.deltaTime();
 
         }
     };
@@ -403,13 +419,53 @@ var MAIN = {
     player.sprite.width = player.width;
     player.sprite.height = player.height;
     player.applyThrust = false;
-    player.speed = 0.1;
+    player.speed = 3;
     player.turnSpeed = 0.0005;
     player.canCollideWith = [asteroidName];
     player.name = playerName;
     player.setColliderRadius();
     player.thisTime = 0;
     player.lastTime = 0;
+    player.invulnerable = false;
+    player.makeSmoke = function() {
+
+        /*********************************************************
+         * Smoke Particle
+         *********************************************************/
+          var smoke = new GameObject();
+          smoke.behaviour = function(){
+
+            this.thisTime += Time.deltaTime();
+            this.width  += (this.thisTime * 0.2);
+            this.height += (this.thisTime * 0.2);
+
+            this.rotation += this.rotateSpeed;
+
+            /*Delete smoke after n seconds have tanspired*/
+            if (this.thisTime >= 1) {
+              this.die();
+            }
+
+
+          }
+
+          smoke.width = 2;
+          smoke.height = 2;
+          smoke.position.x = this.position.x;
+          smoke.position.y = this.position.y;
+          smoke.rotation   = this.rotation;
+          smoke.velocity.x = this.velocity.x;
+          smoke.velocity.y = this.velocity.y;
+          smoke.sprite = Cache.images["bullet"]; //re-use this sprite
+          smoke.sprite.width  = smoke.width;
+          smoke.sprite.height = smoke.height;
+          smoke.speed = 0;
+          smoke.collides = false;
+          smoke.name = "smoke";
+          smoke.rotateSpeed = 2;
+          this.level.gameObjects.push(smoke);
+
+    };
 
     this.level.gameObjects = asteroidArray;
     this.level.gameObjects = this.level.gameObjects.concat(player)
