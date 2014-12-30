@@ -10,7 +10,7 @@ var MAIN = {
     Cache.loadImage("explosion", "sprites/explode.bmp");
     Cache.loadSound("asteroid-smash","sounds/smash.wav");
     Cache.loadSound("player-explode","sounds/explode.wav");
-    Cache.loadSound("lazer","sounds/laser.wav");
+    Cache.loadSound("lazer","sounds/laser.mp3");
     Cache.loadSound("thruster","sounds/thrusters.wav");
 
     this.level   = new Level("main");
@@ -131,7 +131,7 @@ var MAIN = {
 
         /*Reset asteroid*/
         this.reset();
-        Sound.playOnce(Cache.sounds["asteroid-smash"], .05);
+        Sound.playOnceOverlap(Cache.sounds["asteroid-smash"], 1);
 
       }
 
@@ -252,7 +252,7 @@ var MAIN = {
         if((collidingWith.name === asteroidName)) {
 
           /*Make the ship explode and stop*/
-          Sound.playOnce(Cache.sounds["player-explode"]);
+          Sound.playOnce(Cache.sounds["player-explode"], 1);
           this.sprite = Cache.images["explosion"];
           this.isTempDead = true;
           this.invulnerable = true;
@@ -274,7 +274,6 @@ var MAIN = {
 
         /*Has n sconds passed since last check*/
         this.thisTime += Time.deltaTime();
-
 
         /*
          * Reset the sprite of the ship from explosion to ship
@@ -313,13 +312,16 @@ var MAIN = {
           this.rotation += this.turnSpeed * 1;
         }
 
-        /*Only allow the player to fire every second*/
-        if(Key.isDown(Key.SPACE) && ((this.thisTime - this.lastTime) >= 0.5)){
+        /* Only allow the player to fire every second (cooldown)
+         * The cooldown needs to match the gun fire sound sample
+         * length as closely as possible.
+         */
+        if(Key.isDown(Key.SPACE) && ((this.thisTime - this.lastTime) >= 0.4)){
 
           this.lastTime = this.thisTime;
 
           //TODO: Find a better way to do this
-          Sound.playOnce(Cache.sounds["lazer"]);
+          Sound.playOnce(Cache.sounds["lazer"], 1);
 
         /*********************************************************
          * Bullet
@@ -397,7 +399,7 @@ var MAIN = {
             this.makeSmoke();
 
             //TODO: Fix volume
-            //Sound.playOnce(Cache.sounds["thruster"], 0.003);
+            Sound.playOnce(Cache.sounds["thruster"], 0.000003);
           }
 
           /* apply friction */
