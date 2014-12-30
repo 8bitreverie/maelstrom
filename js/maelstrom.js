@@ -15,7 +15,7 @@ function GameObject () {
   this.colliderRadius = 0;
   this.sprites = [];
   this.isGarbage = false;
-  this.behaviour = undefined;
+  this.behaviour = function(){};
   this.reset = function(){};
   this.name = "";
   this.speed = 0.0;
@@ -509,16 +509,21 @@ var Sound = {
   },
 
   playOnce: function(name, volume) {
-    this._playSound(name, false, volume);
+    this._playSound(name, false, volume, false);
   },
 
-  _playSound: function (name, isLoop, volume) {
+  playOnceOverlap: function(name, volume) {
+    this._playSound(name, false, volume, true);
+  },
+
+  _playSound: function (name, isLoop, volume, overlap) {
 
     /*If this sound was started already and is playing return*/
     if(this.sounds[name]) {
-      this.sounds[name].onended = Sound.unmarkIsPlaying(name);
       if(this.sounds[name].isPlaying) {
+        if (!overlap) {
           return;
+        }
       }
     }
 
@@ -526,6 +531,7 @@ var Sound = {
     this._createBuffer(name,name);
     this.sounds[name].connect(this.context.destination);
     this.sounds[name].volume = volume;
+
     /*If it is a loop make sure the audio buffer loops
      *otherwise add a callback to unmark the "isPlaying"
      *property.
@@ -533,18 +539,14 @@ var Sound = {
     if(isLoop) {
       this.sounds[name].loop = true;
     }else{
-      this.sounds[name].onended = Sound.unmarkIsPlaying(name);
+      this.sounds[name].onended = function(event) {
+        this.isPlaying = false;
+      };
     }
-
 
     this.sounds[name].start(0);
     this.sounds[name].isPlaying = true;
 
-  },
-
-  unmarkIsPlaying: function(name) {
-     this.sounds[name].currentTime = 0;
-     this.sounds[name].isPlaying = false;
   },
 
   _createBuffer: function(url, name) {
