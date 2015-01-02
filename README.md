@@ -1,26 +1,21 @@
 MAELSTROM
 =========
 
-Simple OO JavaScript Canvas Base GameEngine With An Example Game
+Simple OO JavaScript Canvas Based GameEngine With An Example Game
 
-This is a demo (Arrow keys to move, space to shoot[soon]):
+This is a demo:
 http://8bitreverie.github.io/maelstrom/
+
+(Arrow keys to move, space to shoot)
 
 TODO
 =========
 
-Add rocket booster sound
-Add high-score
-Reset the gun cooldown timer so that we can fire
-Decrement score when asteroids exits at bottom of screen
-Add cooldown after death so that you dont die immediately again
-Add audio that can be triggered from game object behaviour
-Clean up class interfaces
-Remove .init from engine, figure out nicer way to do that because it is cluttered
-Refactor the demo game, write a few more demos to demonstrate simple games/effects
-Move Radians to angles/ angles to radians out into helper functions
-Add GameObject age (if go > age die)
-Add particle effects for ship
+- Add invuln on first level load
+- Remove .init from engine, figure out nicer way to do that because it is cluttered
+- Refactor the demo game, write a few more demos to demonstrate simple games/effects
+- Move Radians to angles/ angles to radians out into helper functions
+- Add GameObject age (if go > age die)
 
 Resources Used During This Project
 =========
