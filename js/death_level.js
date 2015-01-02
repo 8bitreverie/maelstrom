@@ -1,9 +1,8 @@
-var DEATH = {
-    level: null,
-    init: function() {
+(function() {
 
-    this.level = new Level("death");
-    this.level.music = "music/death.mp3";
+
+    var level = new Level("death");
+    level.music = Assets.sounds["death-music"];
 
     /***************************************************************
      * Ui text for second level death screen
@@ -50,12 +49,12 @@ var DEATH = {
 
       this.uiText = "Hold Space To Continue To Live!";
 
-      this.level.engineRef.globals.score = 0;
-      this.level.engineRef.globals.lives = 3;
+      level.engineRef.globals.score = 0;
+      level.engineRef.globals.lives = 3;
 
       if(Key.isDown(Key.SPACE)){
         this.currentColor=0xff;
-        //this.level.engineRef.loadLevel("main");
+        //level.engineRef.loadLevel("main");
         //TODO: Adjust music volume/fx
       }
 
@@ -66,7 +65,8 @@ var DEATH = {
     deathScreenUI.currentColor = 0xff;
     deathScreenUI.size = 512;
     deathScreenUI.isUI     = true;
-    this.level.gameObjects = [deathScreenUI];
-  },
-};
-DEATH.init();
+    level.gameObjects = [deathScreenUI];
+
+    level.init();
+
+})();

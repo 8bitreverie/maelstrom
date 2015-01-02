@@ -1,11 +1,7 @@
-var INTRO = {
-  level: null,
-  init: function() {
+(function() {
 
-    Cache.loadImage("intro", "sprites/intro_screen.png");
-
-    this.level       = new Level("intro");
-    this.level.music = "music/death.mp3";
+    var level       = new Level("intro");
+    level.music = Assets.sounds["death-music"];
 
     /***************************************************************
      * Ui text for second level death screen
@@ -19,14 +15,14 @@ var INTRO = {
       introName.height        = View.height;
 
       if(Key.isDown(Key.SPACE)){
-        this.level.engineRef.loadLevel("main");
+        level.engineRef.loadLevel("main");
       }
 
     };
 
     introName.position.x    = 0;
     introName.position.y    = 0;
-    introName.sprite        = Cache.images["intro"];
+    introName.sprite        = Assets.images["intro"];
 
     //TODO: Make sure these settings do something.
     introName.sprite.width  = 100;
@@ -73,8 +69,8 @@ var INTRO = {
     storyTextUI.position.y = 201;
     storyTextUI.uiText = "<Incoming Message"
 
+    level.gameObjects = [introName, storyTextUI];
 
-    this.level.gameObjects = [introName, storyTextUI];
-  },
-};
-INTRO.init();
+    level.init();
+
+})();

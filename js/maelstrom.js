@@ -115,16 +115,20 @@ function Level(name) {
   this.view = null;
   this.maxGarbage = 30;
   this.garbageCount = 0;
-  this.engineRef = null;
+  this.engineRef = thisEngine; //This is global in the Window object
   this.music = null;
 
 }
 
-Level.prototype.init = function(engineReference) {
+Level.prototype.init = function() {
 
-  console.log( "Loading level " + this.name);
-  this.engineRef = engineReference;
   this.view = View.context;
+
+  /* Add this level to the engine
+   * level array. This is horrible here but it makes
+   * it easier for a user to write levels and not have
+   * to worry about adding them to the engine*/
+  thisEngine.addLevel(this);
 
 };
 
@@ -283,7 +287,9 @@ Level.prototype.render = function() {
  **********************************************/
 function Maelstrom() {
 
-  this.levelArray = null;
+  this.loaderCheckTimer = null;
+  this.levelArray   = [];
+  this.levelScripts = [];
   this.currentLevel = 0;
 
   /*Because these have to survive over level loads*/
@@ -291,36 +297,34 @@ function Maelstrom() {
 
 };
 
-Maelstrom.prototype.addLevels = function(levels) {
+/*Add an array of scripts which will execute as "levels"*/
+Maelstrom.prototype.addLevelScripts = function(levelScripts) {
 
-  this.levelArray = levels;
-
-};
-
-Maelstrom.prototype.init = function() {
-
-  Sound.init();
-  Time.init();
-  this.currentLevel = 0;
-  window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
-  window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
+  this.levelScripts = levelScripts;
 
 };
 
-Maelstrom.prototype.run= function() {
+/*Add a level object to the game engine levels array*/
+Maelstrom.prototype.addLevel = function(level) {
 
-  var thisEngine = this;
-  console.log("Starting engine...");
+  this.levelArray.push(level);
 
-  thisEngine.init();
+};
 
-  /*initialize the levels*/
-  this.levelArray.forEach(
-    function initializeLevels(level) { level.init(thisEngine); }
-  );
+/*This is only called when at least one "Level" is loaded.*/
+Maelstrom.prototype.isReady = function() {
 
+  /*Check if a level is loaded*/
+  if(this.levelArray.length < 1)
+    return;
+
+  clearInterval(this.loaderCheckTimer);
+  this.loaderCheckTimer = 0;
+
+  /*Load the first level*/
   this.loadLevel(this.levelArray[0].name);
 
+  /*Set up the canvas animation frame timer/handler*/
   function gameLoop() {
 
     Time.update();
@@ -335,14 +339,63 @@ Maelstrom.prototype.run= function() {
 
   requestAnimationFrame(gameLoop);
 
-  console.log("Ending engine...");
+};
 
+/*This initializes the engine*/
+Maelstrom.prototype.init = function() {
+
+  Sound.init();
+  Time.init();
+  window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
+  window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
+
+};
+
+/*This is the public method that a game developer will run*/
+Maelstrom.prototype.run = function() {
+
+  window.thisEngine = this;
+  console.log("Starting engine...");
+
+  thisEngine.init();
+
+  /*Go through all of the level javascripts that the user
+   *has supplied and execute each of them.
+   */
+  this.levelScripts.forEach(
+
+    function loadLevelScript(script) {
+
+      /*This will execute the javascript in a level.
+       *The javascript in a level calls back to add itself
+       *into the engine level array */
+
+      var levelScript = document.createElement('script');
+      levelScript.src = script;
+      levelScript.async = false; //Make this block and exec.
+      document.head.appendChild(levelScript);
+
+    }
+
+  );
+
+
+  /*This sets up a timer to check if at least one level is
+   *loaded and if it is, it tells the engine that everything
+   *is "Ready". The anonymous function executes in a context
+   *that has access to the variables set in the "run" method,
+   *hence thisEngine will point to the Maelstrom object.
+   */
+  this.loaderCheckTimer = setInterval(function(){
+    thisEngine.isReady();
+  }, 1000);
 
 };
 
 /*
  * This method handles loading new levels. This looks
- * like a screen transition to the player.
+ * like a screen transition to the player and can be called
+ * from any loaded level.
  */
 Maelstrom.prototype.loadLevel = function(name) {
 
@@ -572,18 +625,18 @@ var Sound = {
   },
 
   playWav: function(sound) {
-        sound.load();
-        sound.play();
-        sound.currentTime=0;
+    sound.load();
+    sound.play();
+    sound.currentTime=0;
   }
 
 }
 
 /*
- * Cache for holding game resources
+ * Asset cache for holding game resources
  *
  */
-var Cache = {
+var Assets = {
 
   loaded : false,
   sounds : {},
@@ -595,6 +648,13 @@ var Cache = {
 
   loadSound: function(soundName, soundPath){
     this.sounds[soundName] = soundPath;
+    //var thisSound = this;
+    //var audio = new Audio();
+    //audio.addEventListener('canplaythrough', thisSound.isLoaded, false);
+    //audio.src = soundPath;
+    //while(!this.loaded) { }
+    console.log("Loaded sound resource:" + soundPath);
+
   },
 
   loadImage: function(imageName, imagePath) {
@@ -603,7 +663,11 @@ var Cache = {
     this.images[imageName].onload = this.isLoaded();
     while(!this.loaded) { }
     console.log("Loaded image resource:" + imagePath);
-    loaded = false;
+    this.loaded = false;
+  },
+
+  loadFont: function(fontName, fontPath) {
+    //TODO
   }
 
 }
