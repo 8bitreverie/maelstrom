@@ -666,7 +666,7 @@ var Assets = {
      *canplay fires when there is enough to start playing.
      *but neither of these seem to fire properly on chrome
      */
-    audio.addEventListener('canplay', function() {
+    audio.addEventListener('canplaythrough', function() {
       Assets.loadedCount++;
     }, false);
 
