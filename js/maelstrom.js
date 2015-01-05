@@ -460,6 +460,9 @@ var View = {
 
   setFont: function(fontName) {
     this.uiFont = fontName;
+    if(this.context) {
+      this.context.font = this.uiFont;
+    }
   },
 
 };
@@ -633,41 +636,112 @@ var Sound = {
 }
 
 /*
- * Asset cache for holding game resources
- *
+ * Asset cache for holding game resources. At the end of this, call
+ * a function that verifies that everything is loaded.
  */
 var Assets = {
 
-  loaded : false,
+  wantLoadedCount : 0,
+  loadedCount : 0,
+  allLoaded: false,
   sounds : {},
   images : {},
+  fonts : {},
 
   isLoaded : function() {
-    this.loaded = true;
+    this.loadedCount++;
   },
 
-  loadSound: function(soundName, soundPath){
+  addWantLoaded: function() {
+    this.wantLoadedCount++;
+  },
+
+  Sound: function(soundName, soundPath){
+
+    this.addWantLoaded();
     this.sounds[soundName] = soundPath;
-    //var thisSound = this;
-    //var audio = new Audio();
-    //audio.addEventListener('canplaythrough', thisSound.isLoaded, false);
-    //audio.src = soundPath;
-    //while(!this.loaded) { }
-    console.log("Loaded sound resource:" + soundPath);
+    var audio = new Audio();
+
+    /*canplaythrough fires when audio download is complete
+     *canplay fires when there is enough to start playing.
+     *but neither of these seem to fire properly on chrome
+     */
+    audio.addEventListener('canplay', function() {
+      Assets.loadedCount++;
+    }, false);
+
+    //TODO show progress
+    audio.addEventListener('progress', function() {
+
+    }, false);
+
+    audio.addEventListener('error', function() {
+      console.log("error loading audio asset");
+    }, false);
+
+    /*This even seems to fire on chrome when the audio asset
+     *is buffered enough to play*/
+    audio.addEventListener('stalled', function() {
+      Assets.loadedCount++;
+    }, false);
+
+    audio.src = soundPath;
+    console.log("Loading sound resource:" + soundPath);
 
   },
 
-  loadImage: function(imageName, imagePath) {
+  Image: function(imageName, imagePath) {
+
+    this.addWantLoaded();
     this.images[imageName] = new Image();
     this.images[imageName].src = imagePath;
-    this.images[imageName].onload = this.isLoaded();
-    while(!this.loaded) { }
-    console.log("Loaded image resource:" + imagePath);
-    this.loaded = false;
+    this.images[imageName].onload = function() {
+      Assets.loadedCount++;
+    };
+    console.log("Loading image resource:" + imagePath);
+
   },
 
-  loadFont: function(fontName, fontPath) {
-    //TODO
+  Font: function(fontName, fontPath) {
+    var img = document.createElement("image");
+    img.onerror = function(){
+      Assets.loadedCount++;
+    }
+    img.src = fontPath;
+  },
+
+  Load: function() {
+
+    var thisAssets = this;
+    var assetLoaderCheckTimer = setInterval(function(){
+      if (thisAssets.wantLoadedCount === thisAssets.loadedCount) {
+
+        thisAssets.allLoaded = true;
+        clearInterval(assetLoaderCheckTimer);
+
+      }else{
+
+        var loadingString =  "Loaded " + thisAssets.loadedCount
+                           + " of " + thisAssets.wantLoadedCount + " game resources.";
+
+        View.context.clearRect ( 0 , 0 , View.width, View.height );
+
+        var percent = thisAssets.loadedCount/thisAssets.wantLoadedCount;
+
+        View.context.fillStyle="#BEBEBE";
+        View.context.fillRect(0,0,View.width, 12);
+
+        View.context.fillStyle="#000000";
+        View.context.fillRect(0,0,View.width * percent, 12);
+
+        View.context.fillStyle="#BEBEBE";
+        View.context.font = "11px Arial";
+        View.context.fillText(loadingString, 10, 9);
+
+        View.context.fillStyle="#000000";
+      }
+    }, 10);
+
   }
 
 }

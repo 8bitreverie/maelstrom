@@ -5,12 +5,11 @@ body {
 
 canvas {
     border: 1px solid;
-    font-family: Trench;
+    font-family: 'Trench';
 }
 
 @font-face {
     font-family: 'Trench';
     src: url('../fonts/trench100free.otf');
 }
-
 
