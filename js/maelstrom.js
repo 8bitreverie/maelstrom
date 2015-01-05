@@ -682,7 +682,8 @@ var Assets = {
     /*This even seems to fire on chrome when the audio asset
      *is buffered enough to play*/
     audio.addEventListener('stalled', function() {
-      Assets.loadedCount++;
+      console.log("stalled audio asset");
+      //Assets.loadedCount++;
     }, false);
 
     audio.src = soundPath;
